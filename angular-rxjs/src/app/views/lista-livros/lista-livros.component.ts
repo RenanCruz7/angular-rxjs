@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { filter, map, switchMap } from 'rxjs';
+import { debounceTime, filter, map, switchMap } from 'rxjs';
 import { Item } from 'src/app/models/interfaces';
 import { LivroVolumeInfo } from 'src/app/models/livroVolumeInfo';
 import { LivroService } from 'src/app/service/livro.service';
 
+const PAUSA = 300
 @Component({
   selector: 'app-lista-livros',
   templateUrl: './lista-livros.component.html',
@@ -17,7 +18,8 @@ export class ListaLivrosComponent{
   constructor(private service: LivroService) { }
 
   livrosEncontrador$ = this.campoBusca.valueChanges.pipe(
-    filter((valorDigitado) => valorDigitado.length >= 3),
+    debounceTime(PAUSA), // delay para que a requisição seja feita
+    filter((valorDigitado) => valorDigitado.length >= 3), //aqui a requisição so sera feita quando o valor digitador ser igual ou maior que 3 char 
     switchMap((valorDigitado) => this.service.buscar(valorDigitado)),
     map((items) =>this.livrosResultadoParaLivros(items)),
   )
